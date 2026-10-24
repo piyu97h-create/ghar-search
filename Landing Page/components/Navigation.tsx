@@ -2,12 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ArrowUpRight, Volume2, VolumeX, ShieldCheck, Search } from "lucide-react";
+import {
+  Menu,
+  X,
+  ArrowUpRight,
+  Volume2,
+  VolumeX,
+  ShieldCheck,
+  Search,
+  LogIn,
+  UserPlus,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import UserDropdown from "@/components/auth/UserDropdown";
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+
+  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,7 +61,7 @@ export default function Navigation() {
           </div>
         </a>
 
-        {/* Desktop Navigation Links (From PDF Slides) */}
+        {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-7 text-xs font-mono tracking-wider text-white/60">
           <a
             href="#problem"
@@ -88,11 +103,11 @@ export default function Navigation() {
         </nav>
 
         {/* Right Action Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Ambient Audio Indicator */}
           <button
             onClick={() => setIsMuted(!isMuted)}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all text-[10px] font-mono"
+            className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all text-[10px] font-mono"
             title={isMuted ? "Audio muted" : "Audio active"}
           >
             {isMuted ? (
@@ -108,13 +123,38 @@ export default function Navigation() {
             )}
           </button>
 
+          {/* Authentication Section */}
+          {isAuthenticated ? (
+            <UserDropdown />
+          ) : (
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => openAuthModal("login")}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Sign In</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openAuthModal("signup")}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-xs font-medium text-white transition-all hover:border-emerald-500/40"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Register</span>
+              </button>
+            </div>
+          )}
+
           {/* Test Live Prototype CTA */}
           <a
             href="#live-verdict"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-xs font-semibold tracking-tight hover:bg-emerald-400 hover:text-black hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+            className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-white text-black text-xs font-semibold tracking-tight hover:bg-emerald-400 hover:text-black hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)]"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Verify Listing</span>
+            <span className="hidden xs:inline sm:inline">Verify Listing</span>
+            <span className="xs:hidden sm:hidden">Verify</span>
           </a>
 
           {/* Mobile Menu Toggle */}
@@ -135,8 +175,65 @@ export default function Navigation() {
             initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="lg:hidden mt-3 mx-2 p-6 rounded-2xl bg-[#0a0a0c]/95 backdrop-blur-2xl border border-white/10 text-center flex flex-col gap-4 text-xs font-mono tracking-widest uppercase text-white/70"
+            className="lg:hidden mt-3 mx-2 p-5 rounded-3xl bg-[#0a0a0c]/95 backdrop-blur-2xl border border-white/10 flex flex-col gap-3 text-xs font-mono tracking-widest uppercase text-white/70"
           >
+            {/* Authenticated user mobile banner */}
+            {isAuthenticated && user && (
+              <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-400/50"
+                  />
+                  <div>
+                    <div className="font-semibold text-white tracking-normal lowercase capitalize text-xs">
+                      {user.name}
+                    </div>
+                    <div className="text-[10px] text-white/40 tracking-normal font-mono">
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="p-2 rounded-lg text-rose-400 hover:bg-rose-500/10"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {!isAuthenticated && (
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/[0.08]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    openAuthModal("login");
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-white text-black font-semibold text-xs text-center uppercase tracking-wider"
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    openAuthModal("signup");
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold text-xs text-center uppercase tracking-wider"
+                >
+                  Create Account
+                </button>
+              </div>
+            )}
+
             <a
               href="#problem"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -179,6 +276,7 @@ export default function Navigation() {
             >
               06 // Team Details
             </a>
+
             <div className="pt-3 border-t border-white/10">
               <a
                 href="#live-verdict"
@@ -195,3 +293,4 @@ export default function Navigation() {
     </header>
   );
 }
+

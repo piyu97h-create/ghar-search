@@ -17,8 +17,10 @@ import {
   Terminal, 
   Sparkles,
   Info,
-  Check
+  Check,
+  User as UserIcon
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LiveVerdictDemo() {
   const [inputUrl, setInputUrl] = useState("https://housing.com/in/buy/projects/sample-residency-greater-noida");
@@ -27,6 +29,8 @@ export default function LiveVerdictDemo() {
   const [isLiveBrowserOpen, setIsLiveBrowserOpen] = useState(false);
   const [isAddedToWatchlist, setIsAddedToWatchlist] = useState(false);
   const [exportedPdf, setExportedPdf] = useState(false);
+
+  const { user, isAuthenticated, openAuthModal, showToast } = useAuth();
 
   const sampleListings = [
     {
@@ -349,8 +353,14 @@ export default function LiveVerdictDemo() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (!isAuthenticated) {
+                        showToast("Please sign in with Google or GitHub to export certified audit reports.");
+                        openAuthModal("login");
+                        return;
+                      }
                       setExportedPdf(true);
-                      setTimeout(() => setExportedPdf(false), 3000);
+                      showToast(`Certified report generated for ${user?.name} (${user?.email})`);
+                      setTimeout(() => setExportedPdf(false), 3500);
                     }}
                     className="flex-1 py-2.5 px-4 rounded-xl bg-white text-black font-semibold text-xs tracking-tight hover:bg-emerald-400 transition-colors flex items-center justify-center gap-2"
                   >
@@ -360,7 +370,16 @@ export default function LiveVerdictDemo() {
 
                   <button
                     type="button"
-                    onClick={() => setIsAddedToWatchlist(!isAddedToWatchlist)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        showToast("Sign in with Google or GitHub to save properties to your personal watchlist.");
+                        openAuthModal("login");
+                        return;
+                      }
+                      const next = !isAddedToWatchlist;
+                      setIsAddedToWatchlist(next);
+                      showToast(next ? `Saved Sample Residency to ${user?.name}'s watchlist!` : "Removed from watchlist.");
+                    }}
                     className="flex-1 py-2.5 px-4 rounded-xl bg-white/[0.08] hover:bg-white/[0.15] border border-white/10 text-white font-medium text-xs tracking-tight transition-colors flex items-center justify-center gap-2"
                   >
                     {isAddedToWatchlist ? (

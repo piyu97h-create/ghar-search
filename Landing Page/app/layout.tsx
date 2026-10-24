@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
+import AuthModal from "@/components/auth/AuthModal";
+import AuthToast from "@/components/auth/AuthToast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -47,7 +50,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} bg-[#050505] antialiased`}>
       <body className="bg-[#050505] text-white/90 min-h-screen selection:bg-emerald-500/30 selection:text-white">
-        {children}
+        <AuthProvider>
+          {children}
+          <AuthModal />
+          <AuthToast />
+        </AuthProvider>
       </body>
     </html>
   );
